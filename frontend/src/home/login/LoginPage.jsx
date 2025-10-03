@@ -11,7 +11,10 @@ const LoginPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  // This line defines the backend URL. It will use the live URL on Netlify.
+  // 1. THIS IS THE MOST IMPORTANT CHANGE
+  // This line makes your code work everywhere.
+  // On Netlify, it will use your live backend URL.
+  // On your laptop, it will use localhost.
   const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
   const handleLogin = async (e) => {
@@ -20,7 +23,7 @@ const LoginPage = () => {
     setError("");
 
     try {
-      // Use the API_URL variable here
+      // 2. We use the new API_URL variable here
       const res = await axios.post(`${API_URL}/api/auth/login`, {
         email,
         password,
@@ -36,8 +39,10 @@ const LoginPage = () => {
         navigate("/admin");
       } else if (res.data.user.role === "manager") {
         navigate("/manager");
+      } else if (res.data.user.role === "stack") {
+        navigate("/stack");
       } else {
-        navigate("/");
+        navigate("/"); // fallback
       }
     } catch (err) {
       setError("Invalid email or password");
@@ -52,7 +57,6 @@ const LoginPage = () => {
         <h2 className="text-2xl font-bold mb-6 text-center">Login</h2>
         {error && <p className="text-red-500 mb-4">{error}</p>}
         
-        {/* Your input fields for email and password go here */}
         <input
           type="email"
           placeholder="Email"
