@@ -15,7 +15,7 @@ const LoginPage = () => {
   // This line makes your code work everywhere.
   // On Netlify, it will use your live backend URL.
   // On your laptop, it will use localhost.
-  const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
+  const API_URL = process.env.VITE_API_URL || "http://localhost:5000";
 
   const handleLogin = async (e) => {
     e.preventDefault();
