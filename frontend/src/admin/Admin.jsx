@@ -47,6 +47,7 @@ const Admin = () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isSidebarOpen]);
+  
 
 
   return (
