@@ -8,6 +8,27 @@ const path = require("path");
 const QRCode = require("qrcode");
 const { toWords } = require("number-to-words");
 
+// ✅ NEW CHATBOT ROUTES FOR STACKS
+// Find a stack by its ID
+router.get("/find/by-id/:stackId", async (req, res) => {
+    try {
+        const stack = await Stack.findOne({ stackId: { $regex: new RegExp(req.params.stackId, "i") } });
+        if (!stack) return res.status(404).json({ msg: 'Stack not found' });
+        // We use the transform function to get calculated summaries
+        res.json(transformStackDoc(stack));
+    } catch (err) { res.status(500).json({ error: "Server error" }); }
+});
+
+// Calculate total balance of all stacks
+router.get("/summary/all-balances", async (req, res) => {
+    try {
+        const stacks = await Stack.find();
+        const transformedStacks = stacks.map(transformStackDoc);
+        const totalBalance = transformedStacks.reduce((sum, s) => sum + (s.summary?.totalBalance || 0), 0);
+        res.json({ totalBalance, count: stacks.length });
+    } catch (err) { res.status(500).json({ error: "Server error" }); }
+});
+// ✅ END NEW ROUTES
 /* -------------------- Helper: transform stack before sending -------------------- */
 function transformStackDoc(stackDoc) {
   // convert to plain object
