@@ -1,20 +1,21 @@
-// frontend/src/pages/LoginPage.jsx
+// frontend/src/login/LoginPage.jsx
 
 import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
+// 1. IMPORT YOUR NEW CSS FILE AND ASSETS
+import './LoginPage.css';
+import backgroundImage from '../../assets/background.png';
+import ramcoLogo from '../../assets/ramco logo.png';
 const LoginPage = () => {
+  // --- ALL YOUR EXISTING LOGIC IS UNTOUCHED ---
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  // 1. THIS IS THE MOST IMPORTANT CHANGE
-  // This line makes your code work everywhere.
-  // On Netlify, it will use your live backend URL.
-  // On your laptop, it will use localhost.
   const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
   const handleLogin = async (e) => {
@@ -23,18 +24,15 @@ const LoginPage = () => {
     setError("");
 
     try {
-      // 2. We use the new API_URL variable here
       const res = await axios.post(`${API_URL}/api/auth/login`, {
         email,
         password,
       });
 
-      // Save token & user info
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("role", res.data.user.role);
       localStorage.setItem("user", JSON.stringify(res.data.user));
 
-      // Redirect based on role
       if (res.data.user.role === "admin") {
         navigate("/admin");
       } else if (res.data.user.role === "manager") {
@@ -45,43 +43,59 @@ const LoginPage = () => {
         navigate("/"); // fallback
       }
     } catch (err) {
-      setError("Invalid email or password");
+      setError("Invalid Username or Password");
     } finally {
       setIsLoading(false);
     }
   };
+  // --- END OF YOUR LOGIC ---
 
+
+  // 2. THIS IS THE ONLY PART THAT HAS BEEN CHANGED (THE STYLING)
   return (
-    <div className="flex justify-center items-center h-screen bg-gray-100">
-      <form onSubmit={handleLogin} className="bg-white p-8 rounded-xl shadow-md w-96">
-        <h2 className="text-2xl font-bold mb-6 text-center">Login</h2>
-        {error && <p className="text-red-500 mb-4">{error}</p>}
-        
-        <input
-          type="email"
-          placeholder="Email"
-          className="w-full p-3 border rounded mb-4"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          className="w-full p-3 border rounded mb-4"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-        
-        <button
-          type="submit"
-          className="w-full bg-blue-600 text-white p-3 rounded hover:bg-blue-700 disabled:bg-gray-400"
-          disabled={isLoading}
-        >
-          {isLoading ? "Logging in..." : "Login"}
-        </button>
-      </form>
+    <div
+      className="login-container"
+      style={{ backgroundImage: `url(${backgroundImage})` }}
+    >
+      <div className="login-form-container">
+        <div className="text-center">
+          <img src={ramcoLogo} alt="Ramco Cements Logo" className="login-logo d-block mx-auto" />
+        </div>
+
+        <form onSubmit={handleLogin}>
+          {error && <div className="alert alert-danger">{error}</div>}
+
+          <div className="mb-4">
+            <input
+              type="email" // Kept as email for your logic
+              className="form-control"
+              placeholder="USERNAME" // Changed placeholder to match image
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="mb-4">
+            <input
+              type="password"
+              className="form-control"
+              placeholder="PASSWORD" // Changed placeholder to match image
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
+
+          <button
+            type="submit"
+            className="btn btn-primary w-100 btn-submit" // Bootstrap button classes
+            disabled={isLoading}
+          >
+            {isLoading ? "Submitting..." : "SUBMIT"}
+          </button>
+        </form>
+      </div>
     </div>
   );
 };
