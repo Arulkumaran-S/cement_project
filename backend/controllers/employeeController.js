@@ -28,17 +28,13 @@ exports.getEmployeeById = async (req, res) => {
     }
 };
 
-// THIS IS THE NEW FUNCTION THAT WAS MISSING
 exports.getEmployeesByShift = async (req, res) => {
     try {
         const { shift } = req.params;
-        // Find all employees where the 'shift' field matches the one from the URL
         const employees = await Employee.find({ shift: shift });
-        
         if (!employees || employees.length === 0) {
             return res.status(404).json({ msg: `No employees found for shift: ${shift}` });
         }
-        
         res.json(employees);
     } catch (err) {
         res.status(500).json({ error: err.message });
