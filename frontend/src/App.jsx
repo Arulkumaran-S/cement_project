@@ -1,10 +1,10 @@
-// src/App.jsx
+// frontend/src/App.jsx
 import { Routes, Route, Navigate } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import React, { useEffect } from 'react';
 import ChatbotDataStore from './chatbot/ChatbotDataStore';
 
-// --- All your other component imports ---
+// Component Imports
 import LoginPage from './home/login/LoginPage';
 import HomePage from './home/homepage/HomePage';
 import About from './home/about/About';
@@ -24,7 +24,7 @@ import Manager from './manager/Manager';
 import ManagerDashboard from './manager/dashboard/ManagerDashboard';
 import ManagerAttendance from './manager/attendance/ManagerAttendance';
 import ManagerEmployeeView from './manager/employees/ManagerEmployeeView';
-import Stackmaintain from './stack/StackMaintain';
+import StackMaintain from './stack/StackMaintain'; // Corrected import based on file name
 import ChatbotLauncher from './chatbot/ChatbotLauncher';
 
 const App = () => {
@@ -39,11 +39,11 @@ const App = () => {
     return (
         <>
             <Routes>
-                {/* --- All your Route components --- */}
                 <Route path="/" element={<HomePage />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/login" element={<LoginPage />} />
+                
                 <Route path="/admin" element={role === 'admin' ? <Admin /> : <Navigate to="/login" />}>
                     <Route index element={<AdminDashboard />} />
                     <Route path="employees" element={<EmployeeList />} />
@@ -56,13 +56,15 @@ const App = () => {
                     <Route path="purchases" element={<PurchaseList />} />
                     <Route path="purchases/:id" element={<PurchaseDetails />} />
                 </Route>
+                
                 <Route path="/manager" element={role === 'manager' ? <Manager /> : <Navigate to="/login" />}>
                     <Route index element={<ManagerDashboard />} />
                     <Route path="attendance" element={<ManagerAttendance />} />
                     <Route path="employees" element={<ManagerEmployeeView />} />
                     <Route path="employees/:id" element={<EmployeeDetails />} />
                 </Route>
-                <Route path="/stack/*" element={role === 'stack' ? <Stackmaintain /> : <Navigate to="/login" />} />
+                
+                <Route path="/stack/*" element={role === 'stack' ? <StackMaintain /> : <Navigate to="/login" />} />
             </Routes>
             <ChatbotLauncher />
         </>
