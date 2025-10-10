@@ -1,13 +1,14 @@
+// src/App.jsx
 import { Routes, Route, Navigate } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import React, { useEffect } from 'react';
+import ChatbotDataStore from './chatbot/ChatbotDataStore';
 
-// Public Components
+// --- All your other component imports ---
 import LoginPage from './home/login/LoginPage';
 import HomePage from './home/homepage/HomePage';
 import About from './home/about/About';
 import Contact from './home/contact/Contact';
-
-// Admin Components
 import Admin from './admin/Admin';
 import AdminDashboard from './admin/dashboard/AdminDashboard';
 import EmployeeList from './admin/employees/EmployeeList';
@@ -17,66 +18,55 @@ import ManagerDetails from './admin/managers/ManagerDetails';
 import StackList from './admin/stacks/StackList';
 import StackDetails from './admin/stacks/StackDetails';
 import AdminManagerAttendance from './admin/managers/AdminManagerAttendance';
-
-// ✅ NEW IMPORTS
 import PurchaseList from './admin/purchases/PurchaseList';
 import PurchaseDetails from './admin/purchases/PurchaseDetails';
-
-
-// Manager & Stack Components
 import Manager from './manager/Manager';
-import Stackmaintain from './stack/StackMaintain';
+import ManagerDashboard from './manager/dashboard/ManagerDashboard';
+import ManagerAttendance from './manager/attendance/ManagerAttendance';
+import ManagerEmployeeView from './manager/employees/ManagerEmployeeView';
+import Stackmaintain from './stack/Stackmaintain';
+import ChatbotLauncher from './chatbot/ChatbotLauncher';
 
 const App = () => {
-  const role = localStorage.getItem('role');
+    const role = localStorage.getItem('role');
 
-  return (
-    <Routes>
-      {/* Public Routes */}
-      <Route path="/" element={<HomePage />} />
-      <Route path="/about" element={<About />} />
-      <Route path="/contact" element={<Contact />} />
-      <Route path="/login" element={<LoginPage />} />
+    useEffect(() => {
+        if (role && role !== 'guest') {
+            ChatbotDataStore.init();
+        }
+    }, [role]);
 
-      {/* Protected Admin Routes */}
-      <Route
-        path="/admin"
-        element={role === 'admin' ? <Admin /> : <Navigate to="/login" />}
-      >
-        <Route index element={<AdminDashboard />} />
-        
-        {/* Employees */}
-        <Route path="employees" element={<EmployeeList />} />
-        <Route path="employees/:id" element={<EmployeeDetails />} />
-        
-        {/* Managers */}
-        <Route path="managers" element={<ManagerList />} />
-        <Route path="managers/attendance" element={<AdminManagerAttendance />} />
-        <Route path="managers/:managerId" element={<ManagerDetails />} />
-        
-        {/* Stacks */}
-        <Route path="stacks" element={<StackList />} />
-        <Route path="stacks/:id" element={<StackDetails />} />
-        
-        {/* ✅ NEW ROUTES ADDED HERE */}
-        <Route path="purchases" element={<PurchaseList />} />
-        <Route path="purchases/:id" element={<PurchaseDetails />} />
-
-      </Route>
-
-      {/* Protected Manager Route */}
-      <Route
-        path="/manager/*"
-        element={role === 'manager' ? <Manager /> : <Navigate to="/login" />}
-      />
-
-      {/* Protected Stack Route */}
-      <Route
-        path="/stack/*"
-        element={role === 'stack' ? <Stackmaintain /> : <Navigate to="/login" />}
-      />
-    </Routes>
-  );
+    return (
+        <>
+            <Routes>
+                {/* --- All your Route components --- */}
+                <Route path="/" element={<HomePage />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/contact" element={<Contact />} />
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/admin" element={role === 'admin' ? <Admin /> : <Navigate to="/login" />}>
+                    <Route index element={<AdminDashboard />} />
+                    <Route path="employees" element={<EmployeeList />} />
+                    <Route path="employees/:id" element={<EmployeeDetails />} />
+                    <Route path="managers" element={<ManagerList />} />
+                    <Route path="managers/attendance" element={<AdminManagerAttendance />} />
+                    <Route path="managers/:managerId" element={<ManagerDetails />} />
+                    <Route path="stacks" element={<StackList />} />
+                    <Route path="stacks/:id" element={<StackDetails />} />
+                    <Route path="purchases" element={<PurchaseList />} />
+                    <Route path="purchases/:id" element={<PurchaseDetails />} />
+                </Route>
+                <Route path="/manager" element={role === 'manager' ? <Manager /> : <Navigate to="/login" />}>
+                    <Route index element={<ManagerDashboard />} />
+                    <Route path="attendance" element={<ManagerAttendance />} />
+                    <Route path="employees" element={<ManagerEmployeeView />} />
+                    <Route path="employees/:id" element={<EmployeeDetails />} />
+                </Route>
+                <Route path="/stack/*" element={role === 'stack' ? <Stackmaintain /> : <Navigate to="/login" />} />
+            </Routes>
+            <ChatbotLauncher />
+        </>
+    );
 };
 
 export default App;

@@ -1,37 +1,33 @@
 const express = require("express");
 const router = express.Router();
-const Employee = require("../models/Employee");
+const Employee = require('../models/Employee');
+const { createEmployee, getAllEmployees, getEmployeesByShift, getEmployeeById, updateEmployee, deleteEmployee } = require('../controllers/employeeController');
+const auth = require('../middleware/authMiddleware');
 
-// Add employee
-router.post("/", async (req, res) => {
-  try {
-    const employee = new Employee(req.body);
-    await employee.save();
-    res.json(employee);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+router.post("/", auth, createEmployee);
+router.get("/", auth, getAllEmployees);
+router.get("/shift/:shift", auth, getEmployeesByShift);
+
+// ✅ CHATBOT ROUTES
+router.get("/count", auth, async (req, res) => {
+    try {
+        const count = await Employee.countDocuments();
+        res.json({ count });
+    } catch (err) { res.status(500).json({ error: "Server error" }); }
 });
 
-// Get all employees
-router.get("/", async (req, res) => {
-  try {
-    const employees = await Employee.find();
-    res.json(employees);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+router.get("/details/by-name/:name", auth, async (req, res) => {
+    try {
+        // Use a case-insensitive regex to find the name
+        const employee = await Employee.findOne({ name: { $regex: new RegExp(`^${req.params.name}$`, "i") } });
+        if (!employee) return res.status(404).json({ msg: 'Employee not found' });
+        res.json(employee);
+    } catch (err) { res.status(500).json({ error: "Server error" }); }
 });
+// ✅ END CHATBOT ROUTES
 
-// Get employee by ID
-router.get("/:id", async (req, res) => {
-  try {
-    const employee = await Employee.findById(req.params.id);
-    if (!employee) return res.status(404).json({ msg: "Employee not found" });
-    res.json(employee);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
+router.get("/:id", auth, getEmployeeById);
+router.put("/:id", auth, updateEmployee);
+router.delete("/:id", auth, deleteEmployee);
 
 module.exports = router;

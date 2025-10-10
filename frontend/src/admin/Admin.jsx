@@ -1,68 +1,31 @@
-import React, { useState, useEffect, useRef } from "react";
-import { Outlet, NavLink, useLocation } from "react-router-dom";
-import "./Admin.css"; // Import the CSS file
+// src/admin/Admin.jsx
+import React, { useState } from "react";
+import { Outlet, NavLink } from "react-router-dom";
+import ChatbotDataStore from "../chatbot/ChatbotDataStore"; // Make sure this is imported
+import "./Admin.css";
 
 const Admin = () => {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
-  const sidebarRef = useRef(null);
-  const location = useLocation();
 
   const handleLogout = () => {
     localStorage.clear();
+    ChatbotDataStore.reset(); // This line MUST be here to clear chatbot memory
     window.location.href = "/";
   };
-  
+
   const toggleSidebar = () => {
     setSidebarOpen(!isSidebarOpen);
   };
 
-  const closeSidebar = () => {
-    setSidebarOpen(false);
-  };
-
-  // Close sidebar when a NavLink is clicked
-  useEffect(() => {
-    if (isSidebarOpen) {
-      closeSidebar();
-    }
-  }, [location]); // This effect runs every time the route changes
-
-
-  // Close sidebar when clicking outside of it
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (sidebarRef.current && !sidebarRef.current.contains(event.target)) {
-        // Make sure not to close if the menu button itself is clicked
-        if (!event.target.closest('.menu-toggle-button')) {
-          closeSidebar();
-        }
-      }
-    };
-
-    if (isSidebarOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [isSidebarOpen]);
-  
-
-
+  // ... rest of the component
   return (
     <div className="admin-layout d-flex">
-      {/* Backdrop for closing sidebar on mobile */}
-      {isSidebarOpen && <div className="sidebar-backdrop" onClick={closeSidebar}></div>}
-
-      {/* Sidebar */}
-      <div className={`sidebar bg-dark text-white ${isSidebarOpen ? "open" : ""}`} ref={sidebarRef}>
+      <div className={`sidebar bg-dark text-white ${isSidebarOpen ? "open" : ""}`}>
         <div className="sidebar-header p-3">
           <h2 className="fs-4 mb-0">Admin Panel</h2>
           <button className="btn-close btn-close-white d-lg-none" onClick={toggleSidebar}></button>
         </div>
         <nav className="nav flex-column p-3">
-          {/* By using NavLink, the useEffect will trigger on route change and close the sidebar */}
           <NavLink to="/admin" className="nav-link" end>Dashboard</NavLink>
           <NavLink to="/admin/employees" className="nav-link">Employees</NavLink>
           <NavLink to="/admin/managers" className="nav-link">Managers</NavLink>
@@ -74,10 +37,8 @@ const Admin = () => {
           </button>
         </nav>
       </div>
-
-      {/* Main Content */}
       <div className="content-area flex-grow-1 p-3 p-md-4">
-        <button className="btn btn-dark d-lg-none mb-3 menu-toggle-button" onClick={toggleSidebar}>
+        <button className="btn btn-dark d-lg-none mb-3" onClick={toggleSidebar}>
           ☰ Menu
         </button>
         <Outlet />

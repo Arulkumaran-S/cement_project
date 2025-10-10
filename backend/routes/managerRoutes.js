@@ -3,20 +3,50 @@ const router = express.Router();
 const Manager = require("../models/Manager");
 const Attendance = require("../models/Attendance");
 const bcrypt = require("bcryptjs");
+const auth = require('../middleware/authMiddleware');
 
-// ===================== MANAGER CRUD =====================
+// ===================== CHATBOT ROUTE =====================
+/// ✅ CHATBOT ROUTES (Place these before dynamic /:id routes)
+router.get("/count", auth, async (req, res) => {
+    try {
+        const count = await Manager.countDocuments();
+        res.json({ count });
+    } catch (err) { res.status(500).json({ error: "Server error" }); }
+});
 
-// ➕ Add Manager
-router.post("/", async (req, res) => {
+router.get("/find/by-name/:name", auth, async (req, res) => {
+    try {
+        const managers = await Manager.find({ name: { $regex: new RegExp(req.params.name, "i") } });
+        if (!managers || managers.length === 0) return res.status(404).json({ msg: 'Manager not found' });
+        res.json(managers);
+    } catch (err) { res.status(500).json({ error: "Server error" }); }
+});
+// ✅ END CHATBOT ROUTES
+
+// ===================== MANAGER-SPECIFIC ROUTES =====================
+
+// GET logged-in manager's details (Fixes Dashboard Error)
+router.get("/me", auth, async (req, res) => {
+    try {
+        const manager = await Manager.findById(req.user.id).select("-password");
+        if (!manager) {
+            return res.status(404).json({ msg: "Manager not found" });
+        }
+        res.json(manager);
+    } catch (err) {
+        console.error("❌ ERROR fetching /api/managers/me:", err); 
+        res.status(500).send("Server Error");
+    }
+});
+
+// ===================== MANAGER CRUD (for Admin use) =====================
+
+// POST Add Manager
+router.post("/", auth, async (req, res) => {
   try {
     const { password, ...rest } = req.body;
     const hashedPassword = await bcrypt.hash(password, 10);
-
-    const newManager = new Manager({
-      ...rest,
-      password: hashedPassword,
-    });
-
+    const newManager = new Manager({ ...rest, password: hashedPassword });
     await newManager.save();
     res.status(201).json(newManager);
   } catch (err) {
@@ -25,8 +55,8 @@ router.post("/", async (req, res) => {
   }
 });
 
-// 📃 Get all managers
-router.get("/", async (req, res) => {
+// GET all managers
+router.get("/", auth, async (req, res) => {
   try {
     const managers = await Manager.find();
     res.json(managers);
@@ -36,22 +66,8 @@ router.get("/", async (req, res) => {
   }
 });
 
-// 🆔 Get manager by custom field `managerId` (ex: "01")
-router.get("/byManagerId/:mid", async (req, res) => {
-  try {
-    const manager = await Manager.findOne({ managerId: req.params.mid });
-    if (!manager) {
-      return res.status(404).json({ msg: "Manager not found by managerId" });
-    }
-    res.json(manager);
-  } catch (err) {
-    console.error("❌ Error fetching manager by managerId:", err);
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// 📌 Get manager by MongoDB `_id`
-router.get("/:id", async (req, res) => {
+// GET manager by MongoDB `_id`
+router.get("/:id", auth, async (req, res) => {
   try {
     const manager = await Manager.findById(req.params.id);
     if (!manager) {
@@ -64,22 +80,15 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// ✏️ Update manager
-router.put("/:id", async (req, res) => {
+// PUT Update manager
+router.put("/:id", auth, async (req, res) => {
   try {
     const { password, ...rest } = req.body;
     let updateData = { ...rest };
-
-    if (password) {
+    if (password && password !== "") {
       updateData.password = await bcrypt.hash(password, 10);
     }
-
-    const updatedManager = await Manager.findByIdAndUpdate(
-      req.params.id,
-      updateData,
-      { new: true }
-    );
-
+    const updatedManager = await Manager.findByIdAndUpdate(req.params.id, updateData, { new: true });
     res.json(updatedManager);
   } catch (err) {
     console.error("❌ Error updating manager:", err);
@@ -87,8 +96,8 @@ router.put("/:id", async (req, res) => {
   }
 });
 
-// ❌ Delete manager
-router.delete("/:id", async (req, res) => {
+// DELETE manager
+router.delete("/:id", auth, async (req, res) => {
   try {
     await Manager.findByIdAndDelete(req.params.id);
     res.json({ msg: "Manager deleted" });
@@ -98,25 +107,13 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
-// ===================== ATTENDANCE CRUD =====================
+// ===================== OLD ATTENDANCE ROUTES (for Admin to mark Manager attendance) =====================
 
-// ➕ Add attendance (use managerId as reference)
-router.post("/attendance/:mid", async (req, res) => {
+// POST Add attendance
+router.post("/attendance/:mid", auth, async (req, res) => {
   try {
     const { date, status, hoursWorked } = req.body;
-
-    const manager = await Manager.findOne({ managerId: req.params.mid });
-    if (!manager) {
-      return res.status(404).json({ msg: "Manager not found" });
-    }
-
-    const newRecord = new Attendance({
-      managerId: req.params.mid, // keep consistent with managerId
-      date,
-      status,
-      hoursWorked,
-    });
-
+    const newRecord = new Attendance({ managerId: req.params.mid, date, status, hoursWorked });
     await newRecord.save();
     res.status(201).json(newRecord);
   } catch (err) {
@@ -125,12 +122,10 @@ router.post("/attendance/:mid", async (req, res) => {
   }
 });
 
-// 📅 Get attendance by managerId
-router.get("/attendance/:mid", async (req, res) => {
+// GET attendance by managerId
+router.get("/attendance/:mid", auth, async (req, res) => {
   try {
-    const records = await Attendance.find({ managerId: req.params.mid }).sort({
-      date: -1,
-    });
+    const records = await Attendance.find({ managerId: req.params.mid }).sort({ date: -1 });
     res.json(records);
   } catch (err) {
     console.error("❌ Error fetching attendance:", err);
@@ -138,12 +133,10 @@ router.get("/attendance/:mid", async (req, res) => {
   }
 });
 
-// ✅ Alias route for consistency (/attendance/byManagerId/:mid)
-router.get("/attendance/byManagerId/:mid", async (req, res) => {
+// GET attendance by managerId (Alias route for consistency)
+router.get("/attendance/byManagerId/:mid", auth, async (req, res) => {
   try {
-    const records = await Attendance.find({ managerId: req.params.mid }).sort({
-      date: -1,
-    });
+    const records = await Attendance.find({ managerId: req.params.mid }).sort({ date: -1 });
     res.json(records);
   } catch (err) {
     console.error("❌ Error fetching attendance (alias):", err);
@@ -151,21 +144,18 @@ router.get("/attendance/byManagerId/:mid", async (req, res) => {
   }
 });
 
-// ✏️ Update attendance
-router.put("/attendance/update/:attendanceId", async (req, res) => {
+// PUT Update attendance
+router.put("/attendance/update/:attendanceId", auth, async (req, res) => {
   try {
     const { date, status, hoursWorked } = req.body;
-
     const updated = await Attendance.findByIdAndUpdate(
       req.params.attendanceId,
       { date, status, hoursWorked },
       { new: true }
     );
-
     if (!updated) {
       return res.status(404).json({ msg: "Attendance not found" });
     }
-
     res.json(updated);
   } catch (err) {
     console.error("❌ Error updating attendance:", err);
@@ -173,15 +163,13 @@ router.put("/attendance/update/:attendanceId", async (req, res) => {
   }
 });
 
-// ❌ Delete attendance
-router.delete("/attendance/delete/:attendanceId", async (req, res) => {
+// DELETE attendance
+router.delete("/attendance/delete/:attendanceId", auth, async (req, res) => {
   try {
     const deleted = await Attendance.findByIdAndDelete(req.params.attendanceId);
-
     if (!deleted) {
       return res.status(404).json({ msg: "Attendance not found" });
     }
-
     res.json({ msg: "Attendance deleted" });
   } catch (err) {
     console.error("❌ Error deleting attendance:", err);
