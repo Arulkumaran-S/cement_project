@@ -1,5 +1,9 @@
+// backend/routes/employeeRoutes.js
+// THIS IS THE FINAL CORRECTED CODE.
+
 const express = require("express");
 const router = express.Router();
+
 const {
     createEmployee,
     getAllEmployees,
@@ -8,14 +12,17 @@ const {
     updateEmployee,
     deleteEmployee
 } = require('../controllers/employeeController');
-const auth = require('../middleware/authMiddleware');
 
-// Define all routes for employees
-router.post("/", auth, createEmployee);
-router.get("/", auth, getAllEmployees);
-router.get("/shift/:shift", auth, getEmployeesByShift);
-router.get("/:id", auth, getEmployeeById);
-router.put("/:id", auth, updateEmployee);
-router.delete("/:id", auth, deleteEmployee);
+// --- THIS IS THE FIX ---
+// Instead of importing the whole object, we get the 'protect' function from inside it.
+const { protect } = require('../middleware/authMiddleware');
+
+// Now, we use the 'protect' function as the middleware.
+router.post("/", protect, createEmployee);
+router.get("/", protect, getAllEmployees);
+router.get("/shift/:shift", protect, getEmployeesByShift);
+router.get("/:id", protect, getEmployeeById);
+router.put("/:id", protect, updateEmployee);
+router.delete("/:id", protect, deleteEmployee);
 
 module.exports = router;
