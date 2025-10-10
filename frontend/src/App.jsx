@@ -24,7 +24,7 @@ import Manager from './manager/Manager';
 import ManagerDashboard from './manager/dashboard/ManagerDashboard';
 import ManagerAttendance from './manager/attendance/ManagerAttendance';
 import ManagerEmployeeView from './manager/employees/ManagerEmployeeView';
-import Stackmaintain from './stack/Stackmaintain';
+import Stackmaintain from './stack/StackMaintain';
 import ChatbotLauncher from './chatbot/ChatbotLauncher';
 
 const App = () => {
