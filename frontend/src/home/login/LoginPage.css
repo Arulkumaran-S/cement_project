@@ -15,8 +15,8 @@
   padding: 40px 30px;
   border-radius: 15px;
   box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px); /* Vendor prefix first */
+  backdrop-filter: blur(4px); 
   border: 1px solid rgba(255, 255, 255, 0.18);
   width: 100%;
   max-width: 420px; /* Max width for the login box */
