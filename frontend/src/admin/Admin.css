@@ -39,7 +39,7 @@
   overflow-y: auto;
 }
 
-/* New styles for the backdrop */
+/* ✨ UPDATED BACKDROP STYLES ✨ */
 .sidebar-backdrop {
   position: fixed;
   top: 0;
@@ -47,8 +47,8 @@
   width: 100%;
   height: 100%;
   background-color: rgba(0, 0, 0, 0.5);
-  z-index: 1030; /* Should be below the sidebar */
-  display: none; /* Hidden by default */
+  z-index: 1039; /* Z-index should be just BELOW the sidebar */
+  /* We will control its display using React, so 'display: none' is not needed here */
 }
 
 
@@ -60,16 +60,12 @@
     left: 0;
     height: 100%;
     transform: translateX(-100%);
-    z-index: 1040; /* Make sure sidebar is on top */
+    z-index: 1040; /* Make sure sidebar is on top of everything */
   }
 
   .sidebar.open {
     transform: translateX(0);
   }
-  
-  /* Show backdrop when sidebar is open */
-  .sidebar.open + .content-area .sidebar-backdrop,
-  .sidebar-backdrop {
-      display: block;
-  }
+
+  /* The complex selector for the backdrop is removed, as React now handles its visibility */
 }
