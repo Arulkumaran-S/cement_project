@@ -1,20 +1,27 @@
 // frontend/src/login/LoginPage.jsx
 import React, { useState } from "react";
-import axios from "axios";
+// 1. We don't need to import axios directly anymore
+// import axios from "axios"; 
+
+// 2. We import our central API object instead
+import API from "../../utils/api"; // Make sure this path is correct!
+
 import { useNavigate } from "react-router-dom";
 
 import './LoginPage.css';
 import backgroundImage from '../../assets/background.png';
 import ramcoLogo from '../../assets/login logo.jpeg';
-const LoginPage = () => {
-  // --- ALL YOUR EXISTING LOGIC IS UNTOUCHED ---
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate();
 
-  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+// 3. We accept the 'setRole' function from App.jsx to update the state
+const LoginPage = ({ setRole }) => {
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [error, setError] = useState("");
+    const [isLoading, setIsLoading] = useState(false);
+    const navigate = useNavigate();
+
+    // 4. The API_URL is now handled inside 'api.js', so we remove it from here.
+    // const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
     const handleLogin = async (e) => {
         e.preventDefault();
@@ -22,7 +29,8 @@ const LoginPage = () => {
         setError("");
 
         try {
-            const res = await axios.post("/api/auth/login", {
+            // 5. Use 'API.post' and remove '/api' from the URL
+            const res = await API.post("/auth/login", {
                 email,
                 password,
             });
@@ -33,7 +41,7 @@ const LoginPage = () => {
             localStorage.setItem("role", res.data.user.role);
             localStorage.setItem("user", JSON.stringify(res.data.user));
 
-            // Update the App's state after successful login
+            // This line is crucial for fixing the logout/login issue
             setRole(res.data.user.role); 
 
             const userRole = res.data.user.role.trim().toLowerCase();
