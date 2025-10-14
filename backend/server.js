@@ -8,17 +8,22 @@ connectDB();
 
 const app = express();
 
-// ✨ THIS IS THE FINAL & CORRECT CORS CONFIGURATION ✨
-// This tells your server to only trust requests from your Vercel site.
+// ✨ THIS IS THE FINAL & PERMANENT CORS CONFIGURATION ✨
+// This tells your server to trust your main Vercel URL AND any temporary deployment URLs.
 const allowedOrigins = [
-  "https://cement-project-five.vercel.app" // Your live Vercel URL
+  "https://cement-project-five.vercel.app" // Your main live Vercel URL
 ];
 
 const corsOptions = {
   origin: function (origin, callback) {
-    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+    // This regex matches any temporary Vercel URL like 'cement-project-xxxx.vercel.app'
+    const vercelPreviewRegex = /^https:\/\/cement-project-.*\.vercel\.app$/;
+
+    // Allow requests if they are in our list, match the regex, or have no origin (like Postman)
+    if (!origin || allowedOrigins.includes(origin) || vercelPreviewRegex.test(origin)) {
       callback(null, true);
     } else {
+      console.error("CORS Error: Origin not allowed ->", origin);
       callback(new Error("Not allowed by CORS"));
     }
   },
