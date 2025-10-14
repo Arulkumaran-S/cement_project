@@ -1,10 +1,11 @@
-// frontend/src/App.jsx
-import { Routes, Route, Navigate } from 'react-router-dom';
+// src/App.jsx
+import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import ChatbotDataStore from './chatbot/ChatbotDataStore';
+import axios from 'axios';
 
-// Component Imports
+// --- All your other component imports ---
 import LoginPage from './home/login/LoginPage';
 import HomePage from './home/homepage/HomePage';
 import About from './home/about/About';
@@ -24,11 +25,12 @@ import Manager from './manager/Manager';
 import ManagerDashboard from './manager/dashboard/ManagerDashboard';
 import ManagerAttendance from './manager/attendance/ManagerAttendance';
 import ManagerEmployeeView from './manager/employees/ManagerEmployeeView';
-import StackMaintain from './stack/StackMaintain'; // Corrected import based on file name
+import Stackmaintain from './stack/Stackmaintain';
 import ChatbotLauncher from './chatbot/ChatbotLauncher';
 
 const App = () => {
-    const role = localStorage.getItem('role');
+    const [role, setRole] = useState(localStorage.getItem('role'));
+    const navigate = useNavigate();
 
     useEffect(() => {
         if (role && role !== 'guest') {
@@ -36,15 +38,24 @@ const App = () => {
         }
     }, [role]);
 
+    const handleLogout = () => {
+        delete axios.defaults.headers.common["Authorization"];
+        localStorage.clear();
+        ChatbotDataStore.reset();
+        setRole(null); // This is the most important step! It updates the state.
+        navigate("/login"); // Use navigate for smoother redirection
+    };
+
     return (
         <>
             <Routes>
+                {/* --- All your Route components --- */}
                 <Route path="/" element={<HomePage />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/contact" element={<Contact />} />
-                <Route path="/login" element={<LoginPage />} />
-                
-                <Route path="/admin" element={role === 'admin' ? <Admin /> : <Navigate to="/login" />}>
+                <Route path="/login" element={<LoginPage setRole={setRole} />} />
+
+                <Route path="/admin" element={role === 'admin' ? <Admin handleLogout={handleLogout} /> : <Navigate to="/login" />}>
                     <Route index element={<AdminDashboard />} />
                     <Route path="employees" element={<EmployeeList />} />
                     <Route path="employees/:id" element={<EmployeeDetails />} />
@@ -56,15 +67,15 @@ const App = () => {
                     <Route path="purchases" element={<PurchaseList />} />
                     <Route path="purchases/:id" element={<PurchaseDetails />} />
                 </Route>
-                
-                <Route path="/manager" element={role === 'manager' ? <Manager /> : <Navigate to="/login" />}>
+
+                <Route path="/manager" element={role === 'manager' ? <Manager handleLogout={handleLogout} /> : <Navigate to="/login" />}>
                     <Route index element={<ManagerDashboard />} />
                     <Route path="attendance" element={<ManagerAttendance />} />
                     <Route path="employees" element={<ManagerEmployeeView />} />
                     <Route path="employees/:id" element={<EmployeeDetails />} />
                 </Route>
                 
-                <Route path="/stack/*" element={role === 'stack' ? <StackMaintain /> : <Navigate to="/login" />} />
+                <Route path="/stack/*" element={role === 'stack' ? <Stackmaintain /> : <Navigate to="/login" />} />
             </Routes>
             <ChatbotLauncher />
         </>
