@@ -1,32 +1,20 @@
 const jwt = require('jsonwebtoken');
-const User = require('../models/User');
 
-exports.protect = async (req, res, next) => {
-  let token = req.headers.authorization;
+module.exports = function(req, res, next) {
+    // 1. Get token from header
+    const token = req.header('x-auth-token');
 
-  if (!token) return res.status(401).json({ msg: 'No token' });
+    // 2. Check if no token
+    if (!token) {
+        return res.status(401).json({ msg: 'No token, authorization denied' });
+    }
 
-  try {
-    token = token.split(' ')[1]; // Bearer token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = await User.findById(decoded.id).select('-password');
-    next();
-  } catch (err) {
-    res.status(401).json({ msg: 'Token failed' });
-  }
-};
-
-exports.adminOnly = (req, res, next) => {
-  if (req.user.role !== 'admin') return res.status(403).json({ msg: 'Admins only' });
-  next();
-};
-
-exports.managerOnly = (req, res, next) => {
-  if (req.user.role !== 'manager') return res.status(403).json({ msg: 'Managers only' });
-  next();
-};
-
-exports.stackOnly = (req, res, next) => {
-  if (req.user.role !== 'stack') return res.status(403).json({ msg: 'Stack Managers only' });
-  next();
+    // 3. Verify token
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        req.user = decoded; // Adds payload { id, role, shift } to the request
+        next(); // Move to the next middleware or route handler
+    } catch (e) {
+        res.status(401).json({ msg: 'Token is not valid' });
+    }
 };
