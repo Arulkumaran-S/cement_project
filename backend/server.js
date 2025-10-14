@@ -1,4 +1,3 @@
-// backend/server.js
 const express = require("express");
 const dotenv = require("dotenv");
 const cors = require("cors");
@@ -16,11 +15,13 @@ app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/employees", require("./routes/employeeRoutes"));
 app.use("/api/managers", require("./routes/managerRoutes"));
 app.use("/api/stacks", require("./routes/stackRoutes"));
-app.use("/api/purchases", require("./routes/purchaseRoutes"));
+app.use("/api/purchases", require("./routes/purchaseRoutes")); 
 app.use("/api/salary", require("./routes/salaryRoutes"));
 app.use("/api/attendance", require("./routes/attendanceRoutes"));
-// Make sure you have created this file: employeeAttendanceRoutes.js
-app.use("/api/employee-attendance", require("./routes/employeeAttendanceRoutes")); 
+app.use("/api/employee-attendance", require("./routes/employeeAttendanceRoutes"));
+
+// ✅ ADD THIS NEW LINE FOR THE CHATBOT
+
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));

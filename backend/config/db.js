@@ -1,16 +1,12 @@
-// backend/config/db.js
-
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 const connectDB = async () => {
   try {
-    // This line reads the MONGO_URI from Render's environment variables
-    const conn = await mongoose.connect(process.env.MONGO_URI);
-    
-    console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
+    await mongoose.connect(process.env.MONGO_URI);
+    console.log('MongoDB connected');
   } catch (error) {
-    console.error(`❌ MongoDB Connection Error: ${error.message}`);
-    process.exit(1); // Exit process with failure
+    console.error('MongoDB connection error', error);
+    process.exit(1);
   }
 };
 
