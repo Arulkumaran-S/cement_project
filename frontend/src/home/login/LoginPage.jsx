@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 
 import './LoginPage.css';
 import backgroundImage from '../../assets/background.png';
-import ramcoLogo from '../../assets/login logo.png';
+import ramcoLogo from '../../assets/login logo.jpeg';
 const LoginPage = () => {
   // --- ALL YOUR EXISTING LOGIC IS UNTOUCHED ---
   const [email, setEmail] = useState("");
