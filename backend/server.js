@@ -8,12 +8,23 @@ connectDB();
 
 const app = express();
 
-// ✨ THIS IS THE ONLY CHANGE - We are being more specific now ✨
-// This tells your server to ONLY trust requests from your Netlify website.
+// ✨ THIS IS THE FINAL & CORRECT CORS CONFIGURATION ✨
+// This tells your server to only trust requests from your Vercel site.
+const allowedOrigins = [
+  "https://cement-project-five.vercel.app" // Your live Vercel URL
+];
+
 const corsOptions = {
-  origin: "https://cementcrm.netlify.app",
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
   optionsSuccessStatus: 200,
 };
+
 app.use(cors(corsOptions));
 
 
