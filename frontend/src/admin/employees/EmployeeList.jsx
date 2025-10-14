@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+// We are already using API here, so this file is correct. No changes needed.
 import API from '../../utils/api';
 import './EmployeeList.css';
 
@@ -7,7 +8,7 @@ const EmployeeList = () => {
     const [employees, setEmployees] = useState([]);
     const [form, setForm] = useState({
         name: '', email: '', phone: '', dob: '', gender: '',
-        aadhar: '', experience: '', shift: '', baseSalary: '' // ✨ CHANGED: Added baseSalary
+        aadhar: '', experience: '', shift: '', baseSalary: ''
     });
     const [editingId, setEditingId] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -35,7 +36,7 @@ const EmployeeList = () => {
     const resetForm = () => {
         setForm({
             name: '', email: '', phone: '', dob: '', gender: '',
-            aadhar: '', experience: '', shift: '', baseSalary: '' // ✨ CHANGED: Added baseSalary
+            aadhar: '', experience: '', shift: '', baseSalary: ''
         });
         setEditingId(null);
     };
@@ -66,7 +67,7 @@ const EmployeeList = () => {
             aadhar: emp.aadhar,
             experience: emp.experience,
             shift: emp.shift,
-            baseSalary: emp.baseSalary // ✨ CHANGED: Added baseSalary
+            baseSalary: emp.baseSalary
         });
         setEditingId(emp._id);
         window.scrollTo(0, 0);
@@ -110,8 +111,6 @@ const EmployeeList = () => {
                                     <option value="C">Shift C</option>
                                 </select>
                             </div>
-
-                            {/* ✨ THIS IS THE NEW REQUIRED FIELD ✨ */}
                             <div className="col-md-4">
                                 <input 
                                     name="baseSalary" 
@@ -144,7 +143,7 @@ const EmployeeList = () => {
                                     <th>Name</th>
                                     <th>Phone</th>
                                     <th>Shift</th>
-                                    <th>Base Salary</th>{/* ✨ CHANGED: Added Header */}
+                                    <th>Base Salary</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -156,7 +155,6 @@ const EmployeeList = () => {
                                         <td><Link to={`/admin/employees/${emp._id}`}>{emp.name}</Link></td>
                                         <td className="text-center">{emp.phone}</td>
                                         <td className="text-center">{emp.shift}</td>
-                                        {/* ✨ CHANGED: Added Data Cell */}
                                         <td className="text-end">₹{emp.baseSalary ? emp.baseSalary.toLocaleString('en-IN') : 'N/A'}</td>
                                         <td className="text-center">
                                             <div className="d-flex gap-2 justify-content-center">

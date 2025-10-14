@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+// We are already using API here, so this file is correct. No changes needed.
 import API from "../../utils/api";
 import * as XLSX from "xlsx";
-import "./ManagerList.css"; // Intha CSS file ah create pannikonga
+import "./ManagerList.css";
 
 const ManagerList = () => {
-    // Unga original state and functions ellam apdiye iruku, no changes.
     const [managers, setManagers] = useState([]);
     const [form, setForm] = useState({
         managerId: "", name: "", email: "", password: "", dob: "",
@@ -63,8 +63,8 @@ const ManagerList = () => {
             managerId: mgr.managerId,
             name: mgr.name,
             email: mgr.email,
-            password: "", // Password field should be empty for security
-            dob: mgr.dob.split('T')[0], // Format date for input field
+            password: "",
+            dob: mgr.dob.split('T')[0],
             gender: mgr.gender,
             aadhar: mgr.aadhar,
             shift: mgr.shift,
@@ -72,7 +72,7 @@ const ManagerList = () => {
             baseSalary: mgr.baseSalary,
         });
         setEditingId(mgr._id);
-        window.scrollTo(0, 0); // Form mela irukurathunala, page ah top ku scroll pannalam
+        window.scrollTo(0, 0);
     };
 
     const handleDelete = async (id) => {
@@ -83,7 +83,6 @@ const ManagerList = () => {
     };
 
     const exportToExcel = () => {
-        // This function logic is unchanged
         const data = managers.map((mgr) => ({
             Name: mgr.name, ManagerID: mgr.managerId, Email: mgr.email,
             DOB: mgr.dob, Gender: mgr.gender, Aadhar: mgr.aadhar,
@@ -97,7 +96,6 @@ const ManagerList = () => {
 
     return (
         <div className="container-fluid">
-            {/* Add/Edit Form Card */}
             <div className="card shadow-sm mb-4">
                 <div className="card-header bg-light">
                     <h4 className="mb-0">{editingId ? "✍️ Edit Manager" : "➕ Add New Manager"}</h4>
@@ -138,7 +136,6 @@ const ManagerList = () => {
                 </div>
             </div>
 
-            {/* Manager Table Card */}
             <div className="card shadow-sm">
                 <div className="card-header d-flex justify-content-between align-items-center">
                     <h4 className="mb-0">📋 Manager List</h4>

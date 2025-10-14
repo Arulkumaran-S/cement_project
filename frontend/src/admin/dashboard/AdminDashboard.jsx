@@ -1,5 +1,5 @@
-// frontend/src/admin/dashboard/AdminDashboard.jsx
 import { useEffect, useState } from 'react';
+// We are already using API here, so this file is correct. No changes needed.
 import API from '../../utils/api';
 import './AdminDashboard.css';
 
@@ -31,7 +31,7 @@ const AdminDashboard = () => {
       }
     };
     fetchData();
-  }, []); // Dependency array should be empty
+  }, []);
 
   if (loading) {
     return <div className="d-flex justify-content-center align-items-center vh-100"><div className="spinner-border" role="status"><span className="visually-hidden">Loading...</span></div></div>;
