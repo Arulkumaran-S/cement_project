@@ -1,27 +1,20 @@
-// frontend/src/login/LoginPage.jsx
+// frontend/src/home/login/LoginPage.jsx
+
 import React, { useState } from "react";
-// 1. We don't need to import axios directly anymore
-// import axios from "axios"; 
-
-// 2. We import our central API object instead
-import API from "../../utils/api"; // Make sure this path is correct!
-
+import API from "../../utils/api"; // Make sure you are using API, not axios
 import { useNavigate } from "react-router-dom";
 
 import './LoginPage.css';
 import backgroundImage from '../../assets/background.png';
 import ramcoLogo from '../../assets/login logo.jpeg';
 
-// 3. We accept the 'setRole' function from App.jsx to update the state
-const LoginPage = ({ setRole }) => {
+// Make sure you are receiving 'setRole' from App.jsx props
+const LoginPage = ({ setRole }) => { 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
-
-    // 4. The API_URL is now handled inside 'api.js', so we remove it from here.
-    // const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
     const handleLogin = async (e) => {
         e.preventDefault();
@@ -29,23 +22,31 @@ const LoginPage = ({ setRole }) => {
         setError("");
 
         try {
-            // 5. Use 'API.post' and remove '/api' from the URL
             const res = await API.post("/auth/login", {
                 email,
                 password,
             });
 
-            console.log("✅ Login successful! Data received from backend:", res.data);
+            const { token, user } = res.data;
 
-            localStorage.setItem("token", res.data.token);
-            localStorage.setItem("role", res.data.user.role);
-            localStorage.setItem("user", JSON.stringify(res.data.user));
+            // --- ✨ THIS IS THE MOST IMPORTANT FIX ✨ ---
+            // 1. Set token in localStorage
+            localStorage.setItem("token", token);
+            localStorage.setItem("role", user.role);
+            localStorage.setItem("user", JSON.stringify(user));
 
-            // This line is crucial for fixing the logout/login issue
-            setRole(res.data.user.role); 
+            // 2. IMMEDIATELY set the token in the headers for all future requests
+            API.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+            
+            // 3. Update the app's state
+            if (setRole) {
+                setRole(user.role);
+            }
+            
+            console.log("✅ Login successful & token set in headers!");
 
-            const userRole = res.data.user.role.trim().toLowerCase();
-
+            // --- Navigation Logic ---
+            const userRole = user.role.trim().toLowerCase();
             if (userRole === "admin") {
                 navigate("/admin");
             } else if (userRole === "manager") {
@@ -53,7 +54,7 @@ const LoginPage = ({ setRole }) => {
             } else if (userRole === "stack") {
                 navigate("/stack");
             } else {
-                navigate("/"); // fallback
+                navigate("/");
             }
         } catch (err) {
             console.error("❌ Login failed! Error:", err);
@@ -64,6 +65,7 @@ const LoginPage = ({ setRole }) => {
     };
 
     return (
+        // Your JSX code needs no changes
         <div
             className="login-container"
             style={{ backgroundImage: `url(${backgroundImage})` }}
