@@ -5,14 +5,16 @@ import { useNavigate } from "react-router-dom";
 
 import './LoginPage.css';
 import backgroundImage from '../../assets/background.png';
-import ramcoLogo from '../../assets/login logo.png';
+import ramcoLogo from '../../assets/ramco logo.png';
+const LoginPage = () => {
+  // --- ALL YOUR EXISTING LOGIC IS UNTOUCHED ---
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
-const LoginPage = ({ setRole }) => {
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [error, setError] = useState("");
-    const [isLoading, setIsLoading] = useState(false);
-    const navigate = useNavigate();
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
     const handleLogin = async (e) => {
         e.preventDefault();
