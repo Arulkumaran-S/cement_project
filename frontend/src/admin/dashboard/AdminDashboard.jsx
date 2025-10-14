@@ -1,6 +1,7 @@
+// frontend/src/admin/dashboard/AdminDashboard.jsx
 import { useEffect, useState } from 'react';
 import API from '../../utils/api';
-import './AdminDashboard.css'; // Import the CSS file
+import './AdminDashboard.css';
 
 const AdminDashboard = () => {
   const [data, setData] = useState({
@@ -30,7 +31,7 @@ const AdminDashboard = () => {
       }
     };
     fetchData();
-  }, []);
+  }, []); // Dependency array should be empty
 
   if (loading) {
     return <div className="d-flex justify-content-center align-items-center vh-100"><div className="spinner-border" role="status"><span className="visually-hidden">Loading...</span></div></div>;
@@ -40,7 +41,6 @@ const AdminDashboard = () => {
     <div className="container-fluid">
       <h3 className="mb-4">Welcome, Admin</h3>
       <div className="row g-4">
-        {/* ✅ CHANGE IS HERE: Added `col-12` for mobile view */}
         <div className="col-12 col-md-6 col-lg-4">
           <div className="card h-100 dashboard-card shadow-sm">
             <div className="card-body text-center d-flex flex-column justify-content-center">
@@ -49,7 +49,6 @@ const AdminDashboard = () => {
             </div>
           </div>
         </div>
-        {/* ✅ CHANGE IS HERE: Added `col-12` for mobile view */}
         <div className="col-12 col-md-6 col-lg-4">
           <div className="card h-100 dashboard-card shadow-sm">
             <div className="card-body text-center d-flex flex-column justify-content-center">
@@ -58,7 +57,6 @@ const AdminDashboard = () => {
             </div>
           </div>
         </div>
-        {/* ✅ CHANGE IS HERE: Added `col-12` for mobile view */}
         <div className="col-12 col-md-6 col-lg-4">
           <div className="card h-100 dashboard-card shadow-sm">
             <div className="card-body text-center d-flex flex-column justify-content-center">

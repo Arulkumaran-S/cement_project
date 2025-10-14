@@ -1,14 +1,13 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import API from '../../utils/api';
-import './EmployeeList.css'; // Intha CSS file ah create pannikonga
+import './EmployeeList.css';
 
 const EmployeeList = () => {
-    // Unga original state and functions ellam apdiye iruku, no changes.
     const [employees, setEmployees] = useState([]);
     const [form, setForm] = useState({
         name: '', email: '', phone: '', dob: '', gender: '',
-        aadhar: '', experience: 0, shift: '',
+        aadhar: '', experience: '', shift: '', baseSalary: '' // ✨ CHANGED: Added baseSalary
     });
     const [editingId, setEditingId] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -36,7 +35,7 @@ const EmployeeList = () => {
     const resetForm = () => {
         setForm({
             name: '', email: '', phone: '', dob: '', gender: '',
-            aadhar: '', experience: 0, shift: '',
+            aadhar: '', experience: '', shift: '', baseSalary: '' // ✨ CHANGED: Added baseSalary
         });
         setEditingId(null);
     };
@@ -62,14 +61,15 @@ const EmployeeList = () => {
             name: emp.name,
             email: emp.email,
             phone: emp.phone,
-            dob: emp.dob.split('T')[0], // Date format for input
+            dob: emp.dob ? emp.dob.split('T')[0] : '',
             gender: emp.gender,
             aadhar: emp.aadhar,
             experience: emp.experience,
             shift: emp.shift,
+            baseSalary: emp.baseSalary // ✨ CHANGED: Added baseSalary
         });
         setEditingId(emp._id);
-        window.scrollTo(0, 0); // Scroll to top to see the form
+        window.scrollTo(0, 0);
     };
 
     const handleDelete = async (id) => {
@@ -81,7 +81,6 @@ const EmployeeList = () => {
 
     return (
         <div className="container-fluid">
-            {/* Add/Edit Form Card */}
             <div className="card shadow-sm mb-4">
                 <div className="card-header bg-light">
                     <h4 className="mb-0">{editingId ? '✍️ Edit Employee' : '➕ Add New Employee'}</h4>
@@ -111,6 +110,19 @@ const EmployeeList = () => {
                                     <option value="C">Shift C</option>
                                 </select>
                             </div>
+
+                            {/* ✨ THIS IS THE NEW REQUIRED FIELD ✨ */}
+                            <div className="col-md-4">
+                                <input 
+                                    name="baseSalary" 
+                                    type="number" 
+                                    className="form-control" 
+                                    placeholder="Base Salary (₹)" 
+                                    value={form.baseSalary} 
+                                    onChange={handleChange} 
+                                    required 
+                                />
+                            </div>
                         </div>
                         <div className="mt-3">
                             <button type="submit" className="btn btn-primary me-2">{editingId ? 'Update Employee' : 'Add Employee'}</button>
@@ -120,7 +132,6 @@ const EmployeeList = () => {
                 </div>
             </div>
 
-            {/* Employee Table Card */}
             <div className="card shadow-sm">
                 <div className="card-header">
                     <h4 className="mb-0">📋 Employee List</h4>
@@ -130,7 +141,11 @@ const EmployeeList = () => {
                         <table className="table table-striped table-bordered table-hover align-middle mb-0">
                             <thead className="table-dark">
                                 <tr className="text-center">
-                                    <th>Name</th><th>Phone</th><th>Shift</th><th>Experience</th><th>Actions</th>
+                                    <th>Name</th>
+                                    <th>Phone</th>
+                                    <th>Shift</th>
+                                    <th>Base Salary</th>{/* ✨ CHANGED: Added Header */}
+                                    <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -141,7 +156,8 @@ const EmployeeList = () => {
                                         <td><Link to={`/admin/employees/${emp._id}`}>{emp.name}</Link></td>
                                         <td className="text-center">{emp.phone}</td>
                                         <td className="text-center">{emp.shift}</td>
-                                        <td className="text-center">{emp.experience} yrs</td>
+                                        {/* ✨ CHANGED: Added Data Cell */}
+                                        <td className="text-end">₹{emp.baseSalary ? emp.baseSalary.toLocaleString('en-IN') : 'N/A'}</td>
                                         <td className="text-center">
                                             <div className="d-flex gap-2 justify-content-center">
                                                 <button onClick={() => handleEdit(emp)} className="btn btn-warning btn-sm">Edit</button>

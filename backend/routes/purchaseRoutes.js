@@ -1,42 +1,31 @@
+// routes/purchaseRoutes.js
 const express = require("express");
 const router = express.Router();
 const Purchase = require("../models/Purchase");
 const { sendLowStockAlert } = require("../utils/email");
 
 // Helper function to calculate all derived fields
-// THIS FUNCTION IS NOW FIXED TO PREVENT NaN
 function transformPurchaseDoc(doc) {
   const purchase = doc.toObject ? doc.toObject() : JSON.parse(JSON.stringify(doc));
-  
   purchase.purchaseOrders = (purchase.purchaseOrders || []).map(order => {
-    // --- FIX IS HERE ---
-    // Recalculate if values are missing, to fix old data
-    const totalValue = order.totalValue || (order.orderedQty * order.pricePerUnit);
-    const gstAmount = order.gstAmount || (totalValue * (order.gstRate || 0) / 100);
-    const totalValueWithGst = totalValue + gstAmount;
-    // --- END OF FIX ---
-
     const totalPaid = (order.advancePaid || 0) + (order.payments || []).reduce((sum, p) => sum + p.amount, 0);
     const totalReceived = (order.deliveriesReceived || []).reduce((sum, d) => sum + d.qty, 0);
+    const totalValueWithGst = (order.totalValue || 0) + (order.gstAmount || 0);
     const balanceAmount = totalValueWithGst - totalPaid;
     const pendingDelivery = (order.orderedQty || 0) - totalReceived;
-
     return { ...order, totalPaid, totalReceived, balanceAmount, pendingDelivery };
   });
-
   const totalStockIn = purchase.purchaseOrders.reduce((sum, o) => sum + o.totalReceived, 0);
   const totalStockOut = (purchase.usageLogs || []).reduce((sum, log) => sum + log.usedQty, 0);
   purchase.availableStock = totalStockIn - totalStockOut;
-
   purchase.summary = {
     totalOrdered: purchase.purchaseOrders.reduce((sum, o) => sum + o.orderedQty, 0),
     totalReceived: totalStockIn,
     totalUsed: totalStockOut,
-    totalAmount: purchase.purchaseOrders.reduce((sum, o) => (o.totalValue || (o.orderedQty * o.pricePerUnit)) + (o.gstAmount || ((o.orderedQty * o.pricePerUnit) * (o.gstRate || 0) / 100)), 0),
+    totalAmount: purchase.purchaseOrders.reduce((sum, o) => sum + (o.totalValue || 0) + (o.gstAmount || 0), 0),
     totalPaid: purchase.purchaseOrders.reduce((sum, o) => sum + o.totalPaid, 0),
   };
   purchase.summary.totalBalance = purchase.summary.totalAmount - purchase.summary.totalPaid;
-
   return purchase;
 }
 
@@ -75,20 +64,11 @@ router.delete("/:id", async (req, res) => {
   } catch (error) { res.status(500).json({ error: error.message }); }
 });
 
-// --- THIS ROUTE IS NOW FIXED ---
 // POST a new purchase order
 router.post("/:id/orders", async (req, res) => {
   try {
     const purchase = await Purchase.findById(req.params.id);
-    if (!purchase) return res.status(404).json({ error: "Purchase record not found" });
-
-    const newOrder = { ...req.body };
-
-    // Calculate total and GST before saving
-    newOrder.totalValue = (newOrder.orderedQty || 0) * (newOrder.pricePerUnit || 0);
-    newOrder.gstAmount = newOrder.totalValue * ((newOrder.gstRate || 0) / 100);
-
-    purchase.purchaseOrders.push(newOrder);
+    purchase.purchaseOrders.push(req.body);
     await purchase.save();
     res.json(transformPurchaseDoc(purchase));
   } catch (error) { res.status(500).json({ error: error.message }); }
@@ -104,11 +84,8 @@ router.post("/:id/orders/:orderId/payments", async (req, res) => {
         const order = purchase.purchaseOrders.id(req.params.orderId);
         if(!order) return res.status(404).json({error: "Order not found"});
 
-        const totalValue = order.totalValue || (order.orderedQty * order.pricePerUnit);
-        const gstAmount = order.gstAmount || (totalValue * (order.gstRate || 0) / 100);
-        const totalValueWithGst = totalValue + gstAmount;
-
         const totalPaid = (order.advancePaid || 0) + (order.payments || []).reduce((sum, p) => sum + p.amount, 0);
+        const totalValueWithGst = (order.totalValue || 0) + (order.gstAmount || 0);
         const balanceDue = totalValueWithGst - totalPaid;
 
         if (Number(amount) > balanceDue) {
@@ -123,7 +100,7 @@ router.post("/:id/orders/:orderId/payments", async (req, res) => {
     }
 });
 
-// POST a received delivery
+// UPDATED: POST a received delivery
 router.post("/:id/orders/:orderId/deliveries", async (req, res) => {
     try {
         const purchase = await Purchase.findById(req.params.id);
@@ -131,6 +108,7 @@ router.post("/:id/orders/:orderId/deliveries", async (req, res) => {
         order.deliveriesReceived.push(req.body);
         await purchase.save();
 
+        // NEW: Reset the alert flag if stock is replenished
         const transformed = transformPurchaseDoc(purchase);
         if (transformed.availableStock > purchase.lowStockThreshold && purchase.lowStockAlertSent) {
             purchase.lowStockAlertSent = false;
@@ -147,7 +125,7 @@ router.post("/:id/orders/:orderId/deliveries", async (req, res) => {
 });
 
 
-// POST a new usage log
+// UPDATED: POST a new usage log
 router.post("/:id/usage", async (req, res) => {
     try {
         const { usedQty, date } = req.body;
@@ -172,6 +150,7 @@ router.post("/:id/usage", async (req, res) => {
             
             console.log("✅ Conditions MET. Preparing to send email via Nodemailer...");
             
+            // ✅ SARI SEIYAPATTADHU: 'threshold' value ippo serthu anuppurom
             sendLowStockAlert(
                 purchase.materialName,
                 purchase.supplierName,
