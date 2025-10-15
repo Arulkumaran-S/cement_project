@@ -1,66 +1,45 @@
+// backend/routes/chatbotRoutes.js
+
 const express = require("express");
 const router = express.Router();
-const { GoogleGenerativeAI } = require("@google/generative-ai"); // ✅ Switched back to Google
-const Employee = require("../models/Employee");
-const Manager = require("../models/Manager");
-const Stack = require("../models/Stack");
+const Manager = require("../models/Manager"); // Import the Manager model
 
-// ✅ Initialize Google Generative AI
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+// This is the special route that Chatbase will call
+// Example URL: /api/chatbot/get-manager-details/Saran
+router.get("/get-manager-details/:name", async (req, res) => {
+  try {
+    const managerName = req.params.name;
 
-// ✅ THE FINAL CHANGE: Using a more specific, stable model name
-const model = genAI.getGenerativeModel({ model: "gemini-1.0-pro" });
+    // Search the database for a manager with that name (case-insensitive)
+    const manager = await Manager.findOne({
+      name: { $regex: new RegExp(`^${managerName}$`, "i") },
+    });
 
-
-// The main chat route: POST /api/chat
-router.post("/", async (req, res) => {
-    const { prompt, role, shift, path } = req.body;
-
-    if (!prompt) {
-        return res.status(400).json({ error: "Prompt is required." });
+    if (!manager) {
+      // If no manager is found, send this reply
+      return res.status(404).json({
+        reply: `Sorry, I couldn't find any manager named '${managerName}'.`,
+      });
     }
 
-    try {
-        // --- Fetch Live Data from Database ---
-        let contextData = "";
-        const employeeCount = await Employee.countDocuments();
-        const managerCount = await Manager.countDocuments();
+    // If a manager is found, create a helpful reply message
+    const replyMessage = `Here are the live details for ${manager.name}:
+• **Email:** ${manager.email}
+• **Shift:** ${manager.shift}
+• **Experience:** ${manager.experience} years
+• **Base Salary:** ₹${manager.baseSalary.toLocaleString('en-IN')}`;
 
-        if (role === 'admin') {
-            const stackCount = await Stack.countDocuments();
-            contextData = `
-                - Motthama irukura employees: ${employeeCount}
-                - Motthama irukura managers: ${managerCount}
-                - Motthama irukura material stacks: ${stackCount}
-            `;
-        } else if (role === 'manager' && shift) {
-            const shiftEmployeeCount = await Employee.countDocuments({ shift: shift });
-            contextData = `
-                - Intha manager-oda shift (${shift}) la irukura employees: ${shiftEmployeeCount}
-            `;
-        }
+    // Send the reply back to Chatbase
+    res.json({
+      reply: replyMessage,
+    });
 
-        // --- System Instruction for Gemini ---
-        let systemInstruction = `
-        You are a helpful CRM assistant named "Cemento". Your main job is to reply in Tanglish (Tamil written in English script). This is your default language. Only reply in pure English if the user's question is 100% in English. Use the live data provided in the 'Knowledge Base' to give accurate answers. Be friendly and professional.
-        
-        User's Role: ${role || 'guest'}.
-        Knowledge Base (Live Data): ${contextData || "Intha role-ku aana data enn kitta illa."}
-        `;
-        
-        // --- Generate Content with the Gemini API ---
-        const fullPrompt = `${systemInstruction}\n\n**User's Question:** "${prompt}"`;
-        
-        const result = await model.generateContent(fullPrompt);
-        const response = await result.response;
-        const text = response.text();
-
-        res.json({ response: text });
-
-    } catch (error) {
-        console.error("Error with Gemini API:", error);
-        res.status(500).json({ error: "AI kitta irunthu response edukka mudila." });
-    }
+  } catch (error) {
+    console.error("Chatbot API Error:", error);
+    res.status(500).json({
+      reply: "Sorry, something went wrong while getting the details.",
+    });
+  }
 });
 
 module.exports = router;

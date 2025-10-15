@@ -1,9 +1,11 @@
 // src/App.jsx
+
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import React, { useState, useEffect } from 'react';
 import ChatbotDataStore from './chatbot/ChatbotDataStore';
 import axios from 'axios';
+import { SpeedInsights } from "@vercel/speed-insights/react"; // Intha line add panniruken ✨
 
 // --- All your other component imports ---
 import LoginPage from './home/login/LoginPage';
@@ -25,8 +27,7 @@ import Manager from './manager/Manager';
 import ManagerDashboard from './manager/dashboard/ManagerDashboard';
 import ManagerAttendance from './manager/attendance/ManagerAttendance';
 import ManagerEmployeeView from './manager/employees/ManagerEmployeeView';
-import Stackmaintain from './stack/StackMaintain'; // Notice the capital 'M'
-import ChatbotLauncher from './chatbot/ChatbotLauncher';
+import Stackmaintain from './stack/StackMaintain';
 
 const App = () => {
     const [role, setRole] = useState(localStorage.getItem('role'));
@@ -42,8 +43,8 @@ const App = () => {
         delete axios.defaults.headers.common["Authorization"];
         localStorage.clear();
         ChatbotDataStore.reset();
-        setRole(null); // This is the most important step! It updates the state.
-        navigate("/login"); // Use navigate for smoother redirection
+        setRole(null);
+        navigate("/login");
     };
 
     return (
@@ -77,7 +78,7 @@ const App = () => {
                 
                 <Route path="/stack/*" element={role === 'stack' ? <Stackmaintain /> : <Navigate to="/login" />} />
             </Routes>
-            <ChatbotLauncher />
+            <SpeedInsights /> {/* Intha line add panniruken ✨ */}
         </>
     );
 };

@@ -44,6 +44,8 @@ app.use("/api/purchases", require("./routes/purchaseRoutes"));
 app.use("/api/salary", require("./routes/salaryRoutes"));
 app.use("/api/attendance", require("./routes/attendanceRoutes"));
 app.use("/api/employee-attendance", require("./routes/employeeAttendanceRoutes"));
+// ✅ ADD THIS NEW LINE FOR THE CHATBOT
+app.use("/api/chatbot", require("./routes/chatbotRoutes"));
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
